@@ -18,6 +18,8 @@ import org.checkerframework.checker.signature.qual.InternalForm;
 import org.checkerframework.checker.signature.qual.PrimitiveType;
 import org.checkerframework.framework.qual.EnsuresQualifierIf;
 
+import org.checkerframework.checker.determinism.qual.*;
+
 // TODO: There are 6 major formats: https://checkerframework.org/manual/#signature-annotations
 // This should convert among all of them.  But perhaps just add functionality as the need comes up.
 
@@ -241,7 +243,7 @@ public final class Signatures {
   }
 
   /** A map from Java primitive type name (such as "int") to field descriptor (such as "I"). */
-  private static HashMap<@PrimitiveType String, @FieldDescriptor String>
+  private static @OrderNonDet HashMap<@PrimitiveType String, @FieldDescriptor String>
       primitiveToFieldDescriptor = new HashMap<>(8);
 
   static {
@@ -342,7 +344,7 @@ public final class Signatures {
   }
 
   /** A map from field descriptor (sach as "I") to Java primitive type (such as "int"). */
-  private static HashMap<String, String> fieldDescriptorToPrimitive = new HashMap<>(8);
+  private static @OrderNonDet HashMap<String, String> fieldDescriptorToPrimitive = new HashMap<>(8);
 
   static {
     fieldDescriptorToPrimitive.put("Z", "boolean");

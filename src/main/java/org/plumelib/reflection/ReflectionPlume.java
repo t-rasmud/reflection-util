@@ -25,6 +25,8 @@ import org.checkerframework.checker.signature.qual.ClassGetSimpleName;
 import org.checkerframework.checker.signature.qual.FullyQualifiedName;
 import org.checkerframework.dataflow.qual.Pure;
 
+import org.checkerframework.checker.determinism.qual.*;
+
 /** Utility functions related to reflection, Class, Method, ClassLoader, and classpath. */
 public final class ReflectionPlume {
 
@@ -67,7 +69,7 @@ public final class ReflectionPlume {
       "allcheckers:purity.not.deterministic.call.method",
       "lock:method.guarantee.violated"
     }) // order doesn't matter
-    Class<?>[] interfaces = sub.getInterfaces();
+    @Det Class<?>[] interfaces = sub.getInterfaces();
     for (Class<?> ifc : interfaces) {
       if (ifc == sup || isSubtype(ifc, sup)) {
         return true;
@@ -78,7 +80,7 @@ public final class ReflectionPlume {
   }
 
   /** Used by {@link #classForName}. */
-  private static HashMap<String, Class<?>> primitiveClasses = new HashMap<>(8);
+  private static @OrderNonDet HashMap<String, Class<?>> primitiveClasses = new HashMap<>(8);
 
   static {
     primitiveClasses.put("boolean", Boolean.TYPE);
@@ -179,11 +181,12 @@ public final class ReflectionPlume {
      * @throws FileNotFoundException if the file does not exist
      * @throws IOException if there is trouble reading the file
      */
+    @SuppressWarnings("determinism:argument.type.incompatible")
     public Class<?> defineClassFromFile(@BinaryName String className, String pathname)
         throws FileNotFoundException, IOException {
       FileInputStream fi = new FileInputStream(pathname);
       int numbytes = fi.available();
-      byte[] classBytes = new byte[numbytes];
+      @Det byte[] classBytes = new @Det byte[numbytes];
       int bytesRead = fi.read(classBytes);
       fi.close();
       if (bytesRead < numbytes) {
@@ -228,6 +231,7 @@ public final class ReflectionPlume {
    *
    * @param dir directory to add to the system classpath
    */
+  @SuppressWarnings("determinism:argument.type.incompatible")
   public static void addToClasspath(String dir) {
     // If the dir isn't on CLASSPATH, add it.
     String pathSep = System.getProperty("path.separator");
@@ -251,7 +255,7 @@ public final class ReflectionPlume {
   public static String classpathToString() {
     StringJoiner result = new StringJoiner(System.lineSeparator());
     ClassLoader cl = ClassLoader.getSystemClassLoader();
-    URL[] urls = ((URLClassLoader) cl).getURLs();
+    @Det URL[] urls = ((URLClassLoader) cl).getURLs();
     for (URL url : urls) {
       result.add(url.getFile());
     }
@@ -267,7 +271,7 @@ public final class ReflectionPlume {
    * array of Class objects, one for each arg type. Example keys include: "java.lang.String,
    * java.lang.String, java.lang.Class[]" and "int,int".
    */
-  static HashMap<String, Class<?>[]> args_seen = new HashMap<>();
+  static @OrderNonDet HashMap<String, Class<?>[]> args_seen = new HashMap<>();
 
   /**
    * Given a method signature, return the method.
@@ -314,25 +318,25 @@ public final class ReflectionPlume {
     @BinaryName String classname = method.substring(0, dotpos);
     String methodname = method.substring(dotpos + 1, oparenpos);
     String all_argnames = method.substring(oparenpos + 1, cparenpos).trim();
-    Class<?>[] argclasses = args_seen.get(all_argnames);
+    @Det Class<?>[] argclasses = args_seen.get(all_argnames);
     if (argclasses == null) {
-      @BinaryName String[] argnames;
+      @Det @BinaryName String[] argnames;
       if (all_argnames.equals("")) {
         argnames = new String[0];
       } else {
         @SuppressWarnings("signature") // string manipulation: splitting a method signature
-        @BinaryName String[] bnArgnames = all_argnames.split(" *, *");
+        @Det  @BinaryName String[] bnArgnames = all_argnames.split(" *, *");
         argnames = bnArgnames;
       }
 
-      @MonotonicNonNull Class<?>[] argclasses_tmp = new Class<?>[argnames.length];
+      @Det @MonotonicNonNull Class<?>[] argclasses_tmp = new Class<?>[argnames.length];
       for (int i = 0; i < argnames.length; i++) {
         @BinaryName String bnArgname = argnames[i];
         @ClassGetName String cgnArgname = Signatures.binaryNameToClassGetName(bnArgname);
         argclasses_tmp[i] = classForName(cgnArgname);
       }
       // TODO: Shouldn't this require a warning suppression?
-      Class<?>[] argclasses_res = (@NonNull Class<?>[]) argclasses_tmp;
+      @Det Class<?>[] argclasses_res = (@NonNull Class<?>[]) argclasses_tmp;
       argclasses = argclasses_res;
       args_seen.put(all_argnames, argclasses_res);
     }
