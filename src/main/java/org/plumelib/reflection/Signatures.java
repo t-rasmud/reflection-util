@@ -17,6 +17,7 @@ import org.checkerframework.checker.signature.qual.FullyQualifiedName;
 import org.checkerframework.checker.signature.qual.InternalForm;
 import org.checkerframework.checker.signature.qual.PrimitiveType;
 import org.checkerframework.framework.qual.EnsuresQualifierIf;
+import org.checkerframework.checker.determinism.qual.*;
 
 // TODO: There are 6 major formats: https://checkerframework.org/manual/#signature-annotations
 // This should convert among all of them.  But perhaps just add functionality as the need comes up.
@@ -219,6 +220,7 @@ public final class Signatures {
      * @param classname the class name: a binary name or a primitive
      * @param dimensions the number of array dimensions
      */
+    @SuppressWarnings("determinism:assignment.type.incompatible")
     public ClassnameAndDimensions(@BinaryName String classname, int dimensions) {
       this.classname = classname;
       this.dimensions = dimensions;
@@ -241,8 +243,8 @@ public final class Signatures {
   }
 
   /** A map from Java primitive type name (such as "int") to field descriptor (such as "I"). */
-  private static HashMap<@PrimitiveType String, @FieldDescriptor String>
-      primitiveToFieldDescriptor = new HashMap<>(8);
+  private static @OrderNonDet HashMap<@PrimitiveType String, @FieldDescriptor String>
+      primitiveToFieldDescriptor = new @OrderNonDet HashMap<>(8);
 
   static {
     primitiveToFieldDescriptor.put("boolean", "Z");
@@ -265,7 +267,7 @@ public final class Signatures {
    * @param typename name of the type, in fully-qualified binary name format
    * @return name of the class, in field descriptor format
    */
-  @SuppressWarnings("signature") // conversion routine
+  @SuppressWarnings({"signature","determinism:method.invocation.invalid","determinism:return.type.incompatible"}) // conversion routine
   public static @FieldDescriptor String binaryNameToFieldDescriptor(@FqBinaryName String typename) {
     ClassnameAndDimensions cad = ClassnameAndDimensions.parseFqBinaryName(typename);
     String result = primitiveToFieldDescriptor.get(cad.classname);
@@ -286,6 +288,7 @@ public final class Signatures {
    * @return name of the type, in field descriptor format
    * @throws IllegalArgumentException if primitiveName is not a valid primitive type name
    */
+  @SuppressWarnings({"determinism:method.invocation.invalid","determinism:return.type.incompatible"})
   public static @FieldDescriptor String primitiveTypeNameToFieldDescriptor(String primitiveName) {
     String result = primitiveToFieldDescriptor.get(primitiveName);
     if (result == null) {
@@ -342,7 +345,7 @@ public final class Signatures {
   }
 
   /** A map from field descriptor (sach as "I") to Java primitive type (such as "int"). */
-  private static HashMap<String, String> fieldDescriptorToPrimitive = new HashMap<>(8);
+  private static @OrderNonDet HashMap<String, String> fieldDescriptorToPrimitive = new @OrderNonDet HashMap<>(8);
 
   static {
     fieldDescriptorToPrimitive.put("Z", "boolean");
@@ -366,7 +369,7 @@ public final class Signatures {
    * @param typename name of the type, in JVML format
    * @return name of the type, in Java format
    */
-  @SuppressWarnings("signature") // conversion routine
+  @SuppressWarnings({"signature","determinism:method.invocation.invalid","determinism:assignment.type.incompatible"}) // conversion routine
   public static @BinaryName String fieldDescriptorToBinaryName(String typename) {
     if (typename.equals("")) {
       throw new Error("Empty string passed to fieldDescriptorToBinaryName");
@@ -374,7 +377,7 @@ public final class Signatures {
     Matcher m = fdArrayBracketsPattern.matcher(typename);
     String classname = m.replaceFirst("");
     int dimensions = typename.length() - classname.length();
-    String result;
+    @PolyDet String result;
     if (classname.startsWith("L") && classname.endsWith(";")) {
       result = classname.substring(1, classname.length() - 1);
     } else {

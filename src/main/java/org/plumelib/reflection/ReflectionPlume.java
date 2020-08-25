@@ -24,8 +24,11 @@ import org.checkerframework.checker.signature.qual.ClassGetName;
 import org.checkerframework.checker.signature.qual.ClassGetSimpleName;
 import org.checkerframework.checker.signature.qual.FullyQualifiedName;
 import org.checkerframework.dataflow.qual.Pure;
+import org.checkerframework.checker.determinism.qual.*;
+import org.checkerframework.framework.qual.HasQualifierParameter;
 
 /** Utility functions related to reflection, Class, Method, ClassLoader, and classpath. */
+@HasQualifierParameter(NonDet.class)
 public final class ReflectionPlume {
 
   /** This class is a collection of methods; it does not represent anything. */
@@ -78,7 +81,7 @@ public final class ReflectionPlume {
   }
 
   /** Used by {@link #classForName}. */
-  private static HashMap<String, Class<?>> primitiveClasses = new HashMap<>(8);
+  private static @OrderNonDet HashMap<String, Class<?>> primitiveClasses = new @OrderNonDet HashMap<>(8);
 
   static {
     primitiveClasses.put("boolean", Boolean.TYPE);
@@ -113,6 +116,7 @@ public final class ReflectionPlume {
    * @return the Class corresponding to className
    * @throws ClassNotFoundException if the class is not found
    */
+  @SuppressWarnings({"determinism:method.invocation.invalid","determinism:return.type.incompatible"})
   public static Class<?> classForName(@ClassGetName String className)
       throws ClassNotFoundException {
     Class<?> result = primitiveClasses.get(className);
@@ -183,7 +187,7 @@ public final class ReflectionPlume {
         throws FileNotFoundException, IOException {
       FileInputStream fi = new FileInputStream(pathname);
       int numbytes = fi.available();
-      byte[] classBytes = new byte[numbytes];
+      @PolyDet("use") byte @PolyDet[] classBytes = new @PolyDet("use") byte @PolyDet[numbytes];
       int bytesRead = fi.read(classBytes);
       fi.close();
       if (bytesRead < numbytes) {
@@ -267,7 +271,7 @@ public final class ReflectionPlume {
    * array of Class objects, one for each arg type. Example keys include: "java.lang.String,
    * java.lang.String, java.lang.Class[]" and "int,int".
    */
-  static HashMap<String, Class<?>[]> args_seen = new HashMap<>();
+  static @OrderNonDet HashMap<String, Class<?>[]> args_seen = new @OrderNonDet HashMap<>();
 
   /**
    * Given a method signature, return the method.
@@ -285,6 +289,7 @@ public final class ReflectionPlume {
    * @throws ClassNotFoundException if the class is not found
    * @throws NoSuchMethodException if the method is not found
    */
+  @SuppressWarnings({"determinism:return.type.incompatible","determinism:assignment.type.incompatible","determinism:invalid.array.assignment","determinism:method.invocation.invalid","determinism:argument.type.incompatible"})
   public static Method methodForName(String method)
       throws ClassNotFoundException, NoSuchMethodException, SecurityException {
 
@@ -311,28 +316,28 @@ public final class ReflectionPlume {
     }
 
     @SuppressWarnings("signature") // throws exception if class does not exist
-    @BinaryName String classname = method.substring(0, dotpos);
+    @BinaryName @PolyDet String classname = method.substring(0, dotpos);
     String methodname = method.substring(dotpos + 1, oparenpos);
     String all_argnames = method.substring(oparenpos + 1, cparenpos).trim();
     Class<?>[] argclasses = args_seen.get(all_argnames);
     if (argclasses == null) {
-      @BinaryName String[] argnames;
+      @BinaryName @PolyDet("use") String @PolyDet[] argnames;
       if (all_argnames.equals("")) {
-        argnames = new String[0];
+        argnames = new @PolyDet("use") String @PolyDet[0];
       } else {
         @SuppressWarnings("signature") // string manipulation: splitting a method signature
-        @BinaryName String[] bnArgnames = all_argnames.split(" *, *");
+        @BinaryName @PolyDet("use") String @PolyDet[] bnArgnames = all_argnames.split(" *, *");
         argnames = bnArgnames;
       }
 
-      @MonotonicNonNull Class<?>[] argclasses_tmp = new Class<?>[argnames.length];
+      @MonotonicNonNull Class<?> @PolyDet[] argclasses_tmp = new Class<?> @PolyDet[argnames.length];
       for (int i = 0; i < argnames.length; i++) {
         @BinaryName String bnArgname = argnames[i];
-        @ClassGetName String cgnArgname = Signatures.binaryNameToClassGetName(bnArgname);
+        @ClassGetName @PolyDet String cgnArgname = Signatures.binaryNameToClassGetName(bnArgname);
         argclasses_tmp[i] = classForName(cgnArgname);
       }
       // TODO: Shouldn't this require a warning suppression?
-      Class<?>[] argclasses_res = (@NonNull Class<?>[]) argclasses_tmp;
+      Class<?> @PolyDet[] argclasses_res = (@NonNull Class<?> @PolyDet[]) argclasses_tmp;
       argclasses = argclasses_res;
       args_seen.put(all_argnames, argclasses_res);
     }
@@ -467,6 +472,7 @@ public final class ReflectionPlume {
    * @param <T> the (inferred) least upper bound of the arguments
    * @return the least upper bound of all the given classes
    */
+  @SuppressWarnings("determinism:return.type.incompatible")
   public static <T> @Nullable Class<T> leastUpperBound(@Nullable Class<T>[] classes) {
     Class<T> result = null;
     for (Class<T> clazz : classes) {
@@ -483,7 +489,7 @@ public final class ReflectionPlume {
    * @return the least upper bound of the classes of the given objects, or null if all arguments are
    *     null
    */
-  @SuppressWarnings("unchecked") // cast to Class<T>
+  @SuppressWarnings({"unchecked","determinism:return.type.incompatible"}) // cast to Class<T>
   public static <T> @Nullable Class<T> leastUpperBound(@PolyNull Object[] objects) {
     Class<T> result = null;
     for (Object obj : objects) {
@@ -502,7 +508,7 @@ public final class ReflectionPlume {
    * @return the least upper bound of the classes of the given objects, or null if all arguments are
    *     null
    */
-  @SuppressWarnings("unchecked") // cast to Class<T>
+  @SuppressWarnings({"unchecked","determinism:return.type.incompatible"}) // cast to Class<T>
   public static <T> @Nullable Class<T> leastUpperBound(List<? extends @Nullable Object> objects) {
     Class<T> result = null;
     for (Object obj : objects) {
