@@ -77,7 +77,6 @@ checkerFramework {
     // '-AcheckPurityAnnotations',
     '-ArequirePrefixInWarningSuppressions',
     '-AwarnUnneededSuppressions',
-    '-AprintGitProperties',
     // '-AsuppressWarnings=determinism:throw.type.invalid',
     // '-AusePolyDefault'
   ]
