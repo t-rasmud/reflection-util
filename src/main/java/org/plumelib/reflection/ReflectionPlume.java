@@ -116,7 +116,7 @@ public final class ReflectionPlume {
    * @return the Class corresponding to className
    * @throws ClassNotFoundException if the class is not found
    */
-  @SuppressWarnings({"determinism:method.invocation.invalid","determinism:return.type.incompatible"})
+  @SuppressWarnings({"determinism:method.invocation.invalid","determinism:return.type.incompatible"})  // Retrieving a value based on a key from an OrderNonDet map is safe
   public static Class<?> classForName(@ClassGetName String className)
       throws ClassNotFoundException {
     Class<?> result = primitiveClasses.get(className);
@@ -289,7 +289,7 @@ public final class ReflectionPlume {
    * @throws ClassNotFoundException if the class is not found
    * @throws NoSuchMethodException if the method is not found
    */
-  @SuppressWarnings({"determinism:return.type.incompatible","determinism:assignment.type.incompatible","determinism:invalid.array.assignment","determinism:method.invocation.invalid","determinism:argument.type.incompatible"})
+  @SuppressWarnings({"determinism:return.type.incompatible", "determinism:assignment.type.incompatible", "determinism:invalid.array.assignment", "determinism:method.invocation.invalid", "determinism:argument.type.incompatible"})  // Iteration over OrderNonDet collection to create another collection
   public static Method methodForName(String method)
       throws ClassNotFoundException, NoSuchMethodException, SecurityException {
 
@@ -472,7 +472,7 @@ public final class ReflectionPlume {
    * @param <T> the (inferred) least upper bound of the arguments
    * @return the least upper bound of all the given classes
    */
-  @SuppressWarnings("determinism:return.type.incompatible")
+  @SuppressWarnings("determinism:return.type.incompatible")   // Iteration over OrderNonDet collection to compute lub
   public static <T> @Nullable Class<T> leastUpperBound(@Nullable Class<T>[] classes) {
     Class<T> result = null;
     for (Class<T> clazz : classes) {
@@ -489,7 +489,9 @@ public final class ReflectionPlume {
    * @return the least upper bound of the classes of the given objects, or null if all arguments are
    *     null
    */
-  @SuppressWarnings({"unchecked","determinism:return.type.incompatible"}) // cast to Class<T>
+  @SuppressWarnings({"unchecked",  // cast to Class<T>
+          "determinism:return.type.incompatible"  // Iteration over OrderNonDet collection to compute lub
+  })
   public static <T> @Nullable Class<T> leastUpperBound(@PolyNull Object[] objects) {
     Class<T> result = null;
     for (Object obj : objects) {
@@ -508,7 +510,9 @@ public final class ReflectionPlume {
    * @return the least upper bound of the classes of the given objects, or null if all arguments are
    *     null
    */
-  @SuppressWarnings({"unchecked","determinism:return.type.incompatible"}) // cast to Class<T>
+  @SuppressWarnings({"unchecked",  // cast to Class<T>
+          "determinism:return.type.incompatible"  // Iteration over OrderNonDet collection to compute lub
+  })
   public static <T> @Nullable Class<T> leastUpperBound(List<? extends @Nullable Object> objects) {
     Class<T> result = null;
     for (Object obj : objects) {

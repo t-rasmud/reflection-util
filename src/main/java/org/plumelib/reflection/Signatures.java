@@ -18,6 +18,7 @@ import org.checkerframework.checker.signature.qual.InternalForm;
 import org.checkerframework.checker.signature.qual.PrimitiveType;
 import org.checkerframework.framework.qual.EnsuresQualifierIf;
 import org.checkerframework.checker.determinism.qual.*;
+import org.checkerframework.framework.qual.HasQualifierParameter;
 
 // TODO: There are 6 major formats: https://checkerframework.org/manual/#signature-annotations
 // This should convert among all of them.  But perhaps just add functionality as the need comes up.
@@ -220,7 +221,7 @@ public final class Signatures {
      * @param classname the class name: a binary name or a primitive
      * @param dimensions the number of array dimensions
      */
-    @SuppressWarnings("determinism:assignment.type.incompatible")
+    @SuppressWarnings("determinism:assignment.type.incompatible")  // TODO: cannot have @PolyDet fields
     public ClassnameAndDimensions(@BinaryName String classname, int dimensions) {
       this.classname = classname;
       this.dimensions = dimensions;
@@ -267,7 +268,9 @@ public final class Signatures {
    * @param typename name of the type, in fully-qualified binary name format
    * @return name of the class, in field descriptor format
    */
-  @SuppressWarnings({"signature","determinism:method.invocation.invalid","determinism:return.type.incompatible"}) // conversion routine
+  @SuppressWarnings({"signature",  // conversion routine
+          "determinism:method.invocation.invalid","determinism:return.type.incompatible"  // Retrieving a value based on a key from an OrderNonDet map is safe
+  })
   public static @FieldDescriptor String binaryNameToFieldDescriptor(@FqBinaryName String typename) {
     ClassnameAndDimensions cad = ClassnameAndDimensions.parseFqBinaryName(typename);
     String result = primitiveToFieldDescriptor.get(cad.classname);
@@ -288,7 +291,7 @@ public final class Signatures {
    * @return name of the type, in field descriptor format
    * @throws IllegalArgumentException if primitiveName is not a valid primitive type name
    */
-  @SuppressWarnings({"determinism:method.invocation.invalid","determinism:return.type.incompatible"})
+  @SuppressWarnings({"determinism:method.invocation.invalid","determinism:return.type.incompatible"})  // Retrieving a value based on a key from an OrderNonDet map is safe
   public static @FieldDescriptor String primitiveTypeNameToFieldDescriptor(String primitiveName) {
     String result = primitiveToFieldDescriptor.get(primitiveName);
     if (result == null) {
@@ -369,7 +372,9 @@ public final class Signatures {
    * @param typename name of the type, in JVML format
    * @return name of the type, in Java format
    */
-  @SuppressWarnings({"signature","determinism:method.invocation.invalid","determinism:assignment.type.incompatible"}) // conversion routine
+  @SuppressWarnings({"signature",  // conversion routine
+          "determinism:method.invocation.invalid","determinism:assignment.type.incompatible"  // Retrieving a value based on a key from an OrderNonDet map is safe
+  })
   public static @BinaryName String fieldDescriptorToBinaryName(String typename) {
     if (typename.equals("")) {
       throw new Error("Empty string passed to fieldDescriptorToBinaryName");
