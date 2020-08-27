@@ -252,8 +252,8 @@ public final class ReflectionPlume {
    *
    * @return the classpath as a multi-line string
    */
-  public static String classpathToString() {
-    StringJoiner result = new StringJoiner(System.lineSeparator());
+  public static @NonDet String classpathToString() {
+    @NonDet StringJoiner result = new @NonDet StringJoiner(System.lineSeparator());
     ClassLoader cl = ClassLoader.getSystemClassLoader();
     URL[] urls = ((URLClassLoader) cl).getURLs();
     for (URL url : urls) {
