@@ -14,6 +14,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.StringJoiner;
 import java.util.StringTokenizer;
+import org.checkerframework.checker.determinism.qual.*;
 import org.checkerframework.checker.interning.qual.Interned;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.checker.nullness.qual.NonNull;
@@ -24,8 +25,6 @@ import org.checkerframework.checker.signature.qual.ClassGetName;
 import org.checkerframework.checker.signature.qual.ClassGetSimpleName;
 import org.checkerframework.checker.signature.qual.FullyQualifiedName;
 import org.checkerframework.dataflow.qual.Pure;
-
-import org.checkerframework.checker.determinism.qual.*;
 
 /** Utility functions related to reflection, Class, Method, ClassLoader, and classpath. */
 public final class ReflectionPlume {
@@ -181,8 +180,9 @@ public final class ReflectionPlume {
      * @throws FileNotFoundException if the file does not exist
      * @throws IOException if there is trouble reading the file
      */
-    @SuppressWarnings("determinism:argument.type.incompatible")
-    public Class<?> defineClassFromFile(@BinaryName String className, String pathname)
+    @SuppressWarnings(
+        "determinism:argument.type.incompatible") //  true positive, but expected (error message)
+    public @NonDet Class<?> defineClassFromFile(@BinaryName String className, String pathname)
         throws FileNotFoundException, IOException {
       FileInputStream fi = new FileInputStream(pathname);
       int numbytes = fi.available();
@@ -216,7 +216,7 @@ public final class ReflectionPlume {
    * @throws IOException if there is trouble reading the file
    */
   // Also throws UnsupportedClassVersionError and some other exceptions.
-  public static Class<?> defineClassFromFile(@BinaryName String className, String pathname)
+  public static @NonDet Class<?> defineClassFromFile(@BinaryName String className, String pathname)
       throws FileNotFoundException, IOException {
     return thePromiscuousLoader.defineClassFromFile(className, pathname);
   }
@@ -231,7 +231,8 @@ public final class ReflectionPlume {
    *
    * @param dir directory to add to the system classpath
    */
-  @SuppressWarnings("determinism:argument.type.incompatible")
+  @SuppressWarnings(
+      "determinism:argument.type.incompatible") // true positive, but expected (system property)
   public static void addToClasspath(String dir) {
     // If the dir isn't on CLASSPATH, add it.
     String pathSep = System.getProperty("path.separator");
@@ -325,7 +326,7 @@ public final class ReflectionPlume {
         argnames = new String[0];
       } else {
         @SuppressWarnings("signature") // string manipulation: splitting a method signature
-        @Det  @BinaryName String[] bnArgnames = all_argnames.split(" *, *");
+        @Det @BinaryName String[] bnArgnames = all_argnames.split(" *, *");
         argnames = bnArgnames;
       }
 
