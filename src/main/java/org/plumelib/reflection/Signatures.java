@@ -269,7 +269,7 @@ public final class Signatures {
    * @return name of the class, in field descriptor format
    */
   @SuppressWarnings({"signature",  // conversion routine
-          "determinism:method.invocation.invalid","determinism:return.type.incompatible"  // Retrieving a value based on a key from an OrderNonDet map is safe
+          "determinism:method.invocation.invalid","determinism:return.type.incompatible"  // get(OrderNonDet map, Poly key) => Poly value; https://github.com/t-rasmud/checker-framework/issues/197
   })
   public static @FieldDescriptor String binaryNameToFieldDescriptor(@FqBinaryName String typename) {
     ClassnameAndDimensions cad = ClassnameAndDimensions.parseFqBinaryName(typename);
@@ -291,7 +291,7 @@ public final class Signatures {
    * @return name of the type, in field descriptor format
    * @throws IllegalArgumentException if primitiveName is not a valid primitive type name
    */
-  @SuppressWarnings({"determinism:method.invocation.invalid","determinism:return.type.incompatible"})  // Retrieving a value based on a key from an OrderNonDet map is safe
+  @SuppressWarnings({"determinism:method.invocation.invalid","determinism:return.type.incompatible"})  // get(OrderNonDet map, Poly key) => Poly value; https://github.com/t-rasmud/checker-framework/issues/197
   public static @FieldDescriptor String primitiveTypeNameToFieldDescriptor(String primitiveName) {
     String result = primitiveToFieldDescriptor.get(primitiveName);
     if (result == null) {
@@ -373,7 +373,7 @@ public final class Signatures {
    * @return name of the type, in Java format
    */
   @SuppressWarnings({"signature",  // conversion routine
-          "determinism:method.invocation.invalid","determinism:assignment.type.incompatible"  // Retrieving a value based on a key from an OrderNonDet map is safe
+          "determinism:method.invocation.invalid","determinism:assignment.type.incompatible"  // get(OrderNonDet map, Poly key) => Poly value; https://github.com/t-rasmud/checker-framework/issues/197
   })
   public static @BinaryName String fieldDescriptorToBinaryName(String typename) {
     if (typename.equals("")) {
