@@ -221,7 +221,7 @@ public final class Signatures {
      * @param classname the class name: a binary name or a primitive
      * @param dimensions the number of array dimensions
      */
-    @SuppressWarnings("determinism:assignment.type.incompatible")  // TODO: cannot have @PolyDet fields
+    @SuppressWarnings("determinism:assignment.type.incompatible")  // Cannot declare as PolyDet: 'classname' and 'dimensions'; fields in a static class
     public ClassnameAndDimensions(@BinaryName String classname, int dimensions) {
       this.classname = classname;
       this.dimensions = dimensions;
