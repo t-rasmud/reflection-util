@@ -1,7 +1,6 @@
 package org.plumelib.reflection;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.checkerframework.checker.nullness.qual.Nullable;
@@ -78,6 +77,23 @@ public final class TestSignatures {
   ///
 
   /**
+   * Returns true if the argument has the format of a BinaryName. The type it refers to might or
+   * might not exist.
+   */
+  @Test
+  public void testIsBinaryName() {
+    assertTrue(!Signatures.isBinaryName("int"));
+    assertTrue(!Signatures.isBinaryName("int[][]"));
+    assertTrue(Signatures.isBinaryName("java.lang.String"));
+    assertTrue(!Signatures.isBinaryName("java.lang.String[]"));
+    assertTrue(Signatures.isBinaryName("MyClass$22"));
+    assertTrue(!Signatures.isBinaryName("MyClass$22[]"));
+    assertTrue(Signatures.isBinaryName("pkg.Outer$Inner"));
+    assertTrue(!Signatures.isBinaryName("pkg.Outer$Inner[]"));
+    assertTrue(Signatures.isBinaryName("Class$Inner._"));
+  }
+
+  /**
    * Returns true if the argument has the format of a ClassGetName. The type it refers to might or
    * might not exist.
    */
@@ -105,19 +121,22 @@ public final class TestSignatures {
   }
 
   /**
-   * Returns true if the argument has the format of a BinaryName. The type it refers to might or
-   * might not exist.
+   * Returns true if the argument has the format of a DotSeparatedIdentifiers. The package or type
+   * it refers to might or might not exist.
    */
   @Test
-  public void testIsBinaryName() {
-    assertTrue(Signatures.isBinaryName("int"));
-    assertTrue(!Signatures.isBinaryName("int[][]"));
-    assertTrue(Signatures.isBinaryName("java.lang.String"));
-    assertTrue(!Signatures.isBinaryName("java.lang.String[]"));
-    assertTrue(Signatures.isBinaryName("MyClass$22"));
-    assertTrue(!Signatures.isBinaryName("MyClass$22[]"));
-    assertTrue(Signatures.isBinaryName("pkg.Outer$Inner"));
-    assertTrue(!Signatures.isBinaryName("pkg.Outer$Inner[]"));
+  public void testIsDotSeparatedIdentifiers() {
+    assertTrue(!Signatures.isDotSeparatedIdentifiers("hello world"));
+    assertTrue(!Signatures.isDotSeparatedIdentifiers("[[I"));
+    assertTrue(!Signatures.isDotSeparatedIdentifiers("int"));
+    assertTrue(!Signatures.isDotSeparatedIdentifiers("int[][]"));
+    assertTrue(Signatures.isDotSeparatedIdentifiers("java.lang.String"));
+    assertTrue(!Signatures.isDotSeparatedIdentifiers("java.lang.String[]"));
+    assertTrue(Signatures.isDotSeparatedIdentifiers("MyClass$22"));
+    assertTrue(!Signatures.isDotSeparatedIdentifiers("MyClass$22[]"));
+    assertTrue(Signatures.isDotSeparatedIdentifiers("pkg.Outer$Inner"));
+    assertTrue(!Signatures.isDotSeparatedIdentifiers("pkg.Outer$Inner[]"));
+    assertTrue(Signatures.isDotSeparatedIdentifiers("Class$Inner._"));
   }
 
   /**
@@ -126,8 +145,8 @@ public final class TestSignatures {
    */
   @Test
   public void testIsFqBinaryName() {
-    assertFalse(Signatures.isFqBinaryName("hello world"));
-    assertFalse(Signatures.isFqBinaryName("[[I"));
+    assertTrue(!Signatures.isFqBinaryName("hello world"));
+    assertTrue(!Signatures.isFqBinaryName("[[I"));
     assertTrue(Signatures.isFqBinaryName("int"));
     assertTrue(Signatures.isFqBinaryName("int[]"));
     assertTrue(Signatures.isFqBinaryName("int[][]"));
@@ -143,21 +162,13 @@ public final class TestSignatures {
   }
 
   /**
-   * Returns true if the argument has the format of a DotSeparatedIdentifiers. The package or type
-   * it refers to might or might not exist.
+   * Returns true if the argument has the format of a FqBinaryName. The type it refers to might or
+   * might not exist.
    */
   @Test
-  public void testIsDotSeparatedIdentifiers() {
-    assertTrue(!Signatures.isDotSeparatedIdentifiers("hello world"));
-    assertTrue(!Signatures.isDotSeparatedIdentifiers("[[I"));
-    assertTrue(Signatures.isDotSeparatedIdentifiers("int"));
-    assertTrue(!Signatures.isDotSeparatedIdentifiers("int[][]"));
-    assertTrue(Signatures.isDotSeparatedIdentifiers("java.lang.String"));
-    assertTrue(!Signatures.isDotSeparatedIdentifiers("java.lang.String[]"));
-    assertTrue(!Signatures.isDotSeparatedIdentifiers("MyClass$22"));
-    assertTrue(!Signatures.isDotSeparatedIdentifiers("MyClass$22[]"));
-    assertTrue(!Signatures.isDotSeparatedIdentifiers("pkg.Outer$Inner"));
-    assertTrue(!Signatures.isDotSeparatedIdentifiers("pkg.Outer$Inner[]"));
+  public void testIsIdentifier() {
+    assertTrue(Signatures.isIdentifier("_"));
+    assertTrue(Signatures.isIdentifier("Class$Inner"));
   }
 
   ///////////////////////////////////////////////////////////////////////////
