@@ -270,7 +270,7 @@ public final class ReflectionPlume {
    *
    * @return the classpath as a multi-line string
    */
-  public static String classpathToString() {
+  public static @NonDet String classpathToString() {
     return System.getProperty("java.class.path")
         .replace(File.pathSeparator, System.lineSeparator());
   }
