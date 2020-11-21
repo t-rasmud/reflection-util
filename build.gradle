@@ -78,9 +78,9 @@ checkerFramework {
     '-Werror',
     // '-AcheckPurityAnnotations',
     '-ArequirePrefixInWarningSuppressions',
-    '-AwarnUnneededSuppressions',
+    '-AwarnUnneededSuppressions', '-AwarnUnneededSuppressionsExceptions=purity|method.guarantee.violated',
     // '-AsuppressWarnings=determinism:throw.type.invalid',
-    // '-AusePolyDefault'
+    // '-AusePolyDefault',
   ]
 }
 
