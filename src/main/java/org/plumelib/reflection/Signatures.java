@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.StringTokenizer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.checkerframework.checker.determinism.qual.*;
 import org.checkerframework.checker.index.qual.IndexFor;
 import org.checkerframework.checker.index.qual.Positive;
 import org.checkerframework.checker.nullness.qual.Nullable;
@@ -17,8 +18,6 @@ import org.checkerframework.checker.signature.qual.FullyQualifiedName;
 import org.checkerframework.checker.signature.qual.InternalForm;
 import org.checkerframework.checker.signature.qual.PrimitiveType;
 import org.checkerframework.framework.qual.EnsuresQualifierIf;
-import org.checkerframework.checker.determinism.qual.*;
-import org.checkerframework.framework.qual.HasQualifierParameter;
 
 // TODO: There are 6 major formats: https://checkerframework.org/manual/#signature-annotations
 // This should convert among all of them.  But perhaps just add functionality as the need comes up.
@@ -221,7 +220,6 @@ public final class Signatures {
      * @param classname the class name: a binary name or a primitive
      * @param dimensions the number of array dimensions
      */
-    @SuppressWarnings("determinism:assignment.type.incompatible")  // Cannot declare as PolyDet: 'classname' and 'dimensions'; fields in a static class
     public ClassnameAndDimensions(@BinaryName String classname, int dimensions) {
       this.classname = classname;
       this.dimensions = dimensions;
@@ -268,8 +266,8 @@ public final class Signatures {
    * @param typename name of the type, in fully-qualified binary name format
    * @return name of the class, in field descriptor format
    */
-  @SuppressWarnings({"signature",  // conversion routine
-          "determinism:method.invocation.invalid","determinism:return.type.incompatible"  // get(OrderNonDet map, Poly key) => Poly value; https://github.com/t-rasmud/checker-framework/issues/197
+  @SuppressWarnings({
+    "signature", // conversion routine
   })
   public static @FieldDescriptor String binaryNameToFieldDescriptor(@FqBinaryName String typename) {
     ClassnameAndDimensions cad = ClassnameAndDimensions.parseFqBinaryName(typename);
@@ -291,7 +289,6 @@ public final class Signatures {
    * @return name of the type, in field descriptor format
    * @throws IllegalArgumentException if primitiveName is not a valid primitive type name
    */
-  @SuppressWarnings({"determinism:method.invocation.invalid","determinism:return.type.incompatible"})  // get(OrderNonDet map, Poly key) => Poly value; https://github.com/t-rasmud/checker-framework/issues/197
   public static @FieldDescriptor String primitiveTypeNameToFieldDescriptor(String primitiveName) {
     String result = primitiveToFieldDescriptor.get(primitiveName);
     if (result == null) {
@@ -348,7 +345,8 @@ public final class Signatures {
   }
 
   /** A map from field descriptor (sach as "I") to Java primitive type (such as "int"). */
-  private static @OrderNonDet HashMap<String, String> fieldDescriptorToPrimitive = new @OrderNonDet HashMap<>(8);
+  private static @OrderNonDet HashMap<String, String> fieldDescriptorToPrimitive =
+      new @OrderNonDet HashMap<>(8);
 
   static {
     fieldDescriptorToPrimitive.put("Z", "boolean");
@@ -372,8 +370,8 @@ public final class Signatures {
    * @param typename name of the type, in JVML format
    * @return name of the type, in Java format
    */
-  @SuppressWarnings({"signature",  // conversion routine
-          "determinism:method.invocation.invalid","determinism:assignment.type.incompatible"  // get(OrderNonDet map, Poly key) => Poly value; https://github.com/t-rasmud/checker-framework/issues/197
+  @SuppressWarnings({
+    "signature", // conversion routine
   })
   public static @BinaryName String fieldDescriptorToBinaryName(String typename) {
     if (typename.equals("")) {

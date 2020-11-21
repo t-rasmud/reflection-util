@@ -14,6 +14,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.StringJoiner;
 import java.util.StringTokenizer;
+import org.checkerframework.checker.determinism.qual.*;
 import org.checkerframework.checker.interning.qual.Interned;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.checker.nullness.qual.NonNull;
@@ -24,7 +25,6 @@ import org.checkerframework.checker.signature.qual.ClassGetName;
 import org.checkerframework.checker.signature.qual.ClassGetSimpleName;
 import org.checkerframework.checker.signature.qual.FullyQualifiedName;
 import org.checkerframework.dataflow.qual.Pure;
-import org.checkerframework.checker.determinism.qual.*;
 import org.checkerframework.framework.qual.HasQualifierParameter;
 
 /** Utility functions related to reflection, Class, Method, ClassLoader, and classpath. */
@@ -70,7 +70,7 @@ public final class ReflectionPlume {
       "allcheckers:purity.not.deterministic.call.method",
       "lock:method.guarantee.violated"
     }) // order doesn't matter
-    Class<?>[] interfaces = sub.getInterfaces();
+    Class<?> @Det [] interfaces = sub.getInterfaces();
     for (Class<?> ifc : interfaces) {
       if (ifc == sup || isSubtype(ifc, sup)) {
         return true;
@@ -81,7 +81,8 @@ public final class ReflectionPlume {
   }
 
   /** Used by {@link #classForName}. */
-  private static @OrderNonDet HashMap<String, Class<?>> primitiveClasses = new @OrderNonDet HashMap<>(8);
+  private static @OrderNonDet HashMap<String, Class<?>> primitiveClasses =
+      new @OrderNonDet HashMap<>(8);
 
   static {
     primitiveClasses.put("boolean", Boolean.TYPE);
@@ -116,7 +117,6 @@ public final class ReflectionPlume {
    * @return the Class corresponding to className
    * @throws ClassNotFoundException if the class is not found
    */
-  @SuppressWarnings({"determinism:method.invocation.invalid","determinism:return.type.incompatible"})  // get(OrderNonDet map, Poly key) => Poly value; https://github.com/t-rasmud/checker-framework/issues/197
   public static Class<?> classForName(@ClassGetName String className)
       throws ClassNotFoundException {
     Class<?> result = primitiveClasses.get(className);
@@ -183,11 +183,12 @@ public final class ReflectionPlume {
      * @throws FileNotFoundException if the file does not exist
      * @throws IOException if there is trouble reading the file
      */
+    @SuppressWarnings("determinism") // https://github.com/t-rasmud/checker-framework/issues/213
     public Class<?> defineClassFromFile(@BinaryName String className, String pathname)
         throws FileNotFoundException, IOException {
       FileInputStream fi = new FileInputStream(pathname);
       int numbytes = fi.available();
-      @PolyDet("use") byte @PolyDet[] classBytes = new @PolyDet("use") byte @PolyDet[numbytes];
+      @PolyDet byte[] classBytes = new @PolyDet byte[numbytes];
       int bytesRead = fi.read(classBytes);
       fi.close();
       if (bytesRead < numbytes) {
@@ -232,6 +233,7 @@ public final class ReflectionPlume {
    *
    * @param dir directory to add to the system classpath
    */
+  @SuppressWarnings("determinism") // true positive: read & write system property
   public static void addToClasspath(String dir) {
     // If the dir isn't on CLASSPATH, add it.
     String pathSep = System.getProperty("path.separator");
@@ -252,6 +254,7 @@ public final class ReflectionPlume {
    *
    * @return the classpath as a multi-line string
    */
+  @SuppressWarnings("determinism") // true positive: read system property
   public static @NonDet String classpathToString() {
     @NonDet StringJoiner result = new @NonDet StringJoiner(System.lineSeparator());
     ClassLoader cl = ClassLoader.getSystemClassLoader();
@@ -289,7 +292,10 @@ public final class ReflectionPlume {
    * @throws ClassNotFoundException if the class is not found
    * @throws NoSuchMethodException if the method is not found
    */
-  @SuppressWarnings({"determinism:return.type.incompatible", "determinism:assignment.type.incompatible", "determinism:invalid.array.assignment", "determinism:method.invocation.invalid", "determinism:argument.type.incompatible"})  // Iteration over OrderNonDet collection to create another collection; also get(OrderNonDet map, Poly key) => Poly value; https://github.com/t-rasmud/checker-framework/issues/197
+  @SuppressWarnings({
+    "determinism", // https://github.com/t-rasmud/checker-framework/issues/213
+  })
+  // map, Poly key) => Poly value; https://github.com/t-rasmud/checker-framework/issues/212
   public static Method methodForName(String method)
       throws ClassNotFoundException, NoSuchMethodException, SecurityException {
 
@@ -321,23 +327,23 @@ public final class ReflectionPlume {
     String all_argnames = method.substring(oparenpos + 1, cparenpos).trim();
     Class<?>[] argclasses = args_seen.get(all_argnames);
     if (argclasses == null) {
-      @BinaryName @PolyDet("use") String @PolyDet[] argnames;
+      @BinaryName @PolyDet String @PolyDet [] argnames;
       if (all_argnames.equals("")) {
-        argnames = new @PolyDet("use") String @PolyDet[0];
+        argnames = new @PolyDet String @PolyDet [0];
       } else {
         @SuppressWarnings("signature") // string manipulation: splitting a method signature
-        @BinaryName @PolyDet("use") String @PolyDet[] bnArgnames = all_argnames.split(" *, *");
+        @BinaryName @PolyDet String @PolyDet [] bnArgnames = all_argnames.split(" *, *");
         argnames = bnArgnames;
       }
 
-      @MonotonicNonNull Class<?> @PolyDet[] argclasses_tmp = new Class<?> @PolyDet[argnames.length];
+      @MonotonicNonNull Class<?> @PolyDet [] argclasses_tmp = new Class<?> @PolyDet [argnames.length];
       for (int i = 0; i < argnames.length; i++) {
         @BinaryName String bnArgname = argnames[i];
         @ClassGetName @PolyDet String cgnArgname = Signatures.binaryNameToClassGetName(bnArgname);
         argclasses_tmp[i] = classForName(cgnArgname);
       }
       // TODO: Shouldn't this require a warning suppression?
-      Class<?> @PolyDet[] argclasses_res = (@NonNull Class<?> @PolyDet[]) argclasses_tmp;
+      Class<?> @PolyDet [] argclasses_res = (@NonNull Class<?> @PolyDet []) argclasses_tmp;
       argclasses = argclasses_res;
       args_seen.put(all_argnames, argclasses_res);
     }
@@ -472,7 +478,6 @@ public final class ReflectionPlume {
    * @param <T> the (inferred) least upper bound of the arguments
    * @return the least upper bound of all the given classes
    */
-  @SuppressWarnings("determinism:return.type.incompatible")  // Iteration over OrderNonDet collection to compute commutative operation: lub
   public static <T> @Nullable Class<T> leastUpperBound(@Nullable Class<T>[] classes) {
     Class<T> result = null;
     for (Class<T> clazz : classes) {
@@ -489,8 +494,8 @@ public final class ReflectionPlume {
    * @return the least upper bound of the classes of the given objects, or null if all arguments are
    *     null
    */
-  @SuppressWarnings({"unchecked",  // cast to Class<T>
-          "determinism:return.type.incompatible"  // Iteration over OrderNonDet collection to compute commutative operation: lub
+  @SuppressWarnings({
+    "unchecked", // cast to Class<T>
   })
   public static <T> @Nullable Class<T> leastUpperBound(@PolyNull Object[] objects) {
     Class<T> result = null;
@@ -510,8 +515,8 @@ public final class ReflectionPlume {
    * @return the least upper bound of the classes of the given objects, or null if all arguments are
    *     null
    */
-  @SuppressWarnings({"unchecked",  // cast to Class<T>
-          "determinism:return.type.incompatible"  // Iteration over OrderNonDet collection to compute commutative operation: lub
+  @SuppressWarnings({
+    "unchecked", // cast to Class<T>
   })
   public static <T> @Nullable Class<T> leastUpperBound(List<? extends @Nullable Object> objects) {
     Class<T> result = null;
