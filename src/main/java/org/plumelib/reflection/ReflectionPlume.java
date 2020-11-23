@@ -3,6 +3,7 @@
 
 package org.plumelib.reflection;
 
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -95,8 +96,6 @@ public final class ReflectionPlume {
     primitiveClasses.put("short", Short.TYPE);
   }
 
-  // The @ClassGetName annotation encourages proper use, even though this can take a
-  // fully-qualified name (only for a non-array).
   // TODO: Should create a method that handles any ClassGetName (including primitives), but not
   // fully-qualified names.  A routine with a polymorphic parameter type is confusing.
   /**
@@ -117,6 +116,8 @@ public final class ReflectionPlume {
    * @return the Class corresponding to className
    * @throws ClassNotFoundException if the class is not found
    */
+  // The @ClassGetName annotation encourages proper use, even though this can take a
+  // fully-qualified name (only for a non-array).
   public static Class<?> classForName(@ClassGetName String className)
       throws ClassNotFoundException {
     Class<?> result = primitiveClasses.get(className);
@@ -254,8 +255,11 @@ public final class ReflectionPlume {
    *
    * @return the classpath as a multi-line string
    */
-  @SuppressWarnings("determinism") // true positive: read system property
-  public static @NonDet String classpathToString() {
+  @SuppressWarnings({
+    "UnusedMethod", // This implementation works only on Java 8, not Java 11.
+    "determinism" // true positive: read system property
+  })
+  private static @NonDet String classpathToStringJava8Only() {
     @NonDet StringJoiner result = new @NonDet StringJoiner(System.lineSeparator());
     ClassLoader cl = ClassLoader.getSystemClassLoader();
     URL[] urls = ((URLClassLoader) cl).getURLs();
@@ -263,6 +267,16 @@ public final class ReflectionPlume {
       result.add(url.getFile());
     }
     return result.toString();
+  }
+
+  /**
+   * Returns the classpath as a multi-line string.
+   *
+   * @return the classpath as a multi-line string
+   */
+  public static @NonDet String classpathToString() {
+    return System.getProperty("java.class.path")
+        .replace(File.pathSeparator, System.lineSeparator());
   }
 
   ///////////////////////////////////////////////////////////////////////////
