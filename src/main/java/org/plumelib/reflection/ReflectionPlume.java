@@ -234,7 +234,7 @@ public final class ReflectionPlume {
    *
    * @param dir directory to add to the system classpath
    */
-  @SuppressWarnings("determinism") // true positive: read & write system property
+  // true positive: read & write system property
   public static void addToClasspath(String dir) {
     // If the dir isn't on CLASSPATH, add it.
     String pathSep = System.getProperty("path.separator");
@@ -256,9 +256,9 @@ public final class ReflectionPlume {
    * @return the classpath as a multi-line string
    */
   @SuppressWarnings({
-    "UnusedMethod", // This implementation works only on Java 8, not Java 11.
-    "determinism" // true positive: read system property
+    "UnusedMethod" // This implementation works only on Java 8, not Java 11.
   })
+  // true positive: read system property
   private static @NonDet String classpathToStringJava8Only() {
     @NonDet StringJoiner result = new @NonDet StringJoiner(System.lineSeparator());
     ClassLoader cl = ClassLoader.getSystemClassLoader();
