@@ -181,8 +181,7 @@ public final class ReflectionPlume {
      * @throws FileNotFoundException if the file does not exist
      * @throws IOException if there is trouble reading the file
      */
-    @SuppressWarnings(
-        "determinism:argument.type.incompatible") //  true positive, but expected (error message)
+    @SuppressWarnings("determinism:argument.type.incompatible") //  true positive, but expected (error message)
     public @NonDet Class<?> defineClassFromFile(@BinaryName String className, String pathname)
         throws FileNotFoundException, IOException {
       FileInputStream fi = new FileInputStream(pathname);
@@ -232,8 +231,7 @@ public final class ReflectionPlume {
    *
    * @param dir directory to add to the system classpath
    */
-  @SuppressWarnings(
-      "determinism:argument.type.incompatible") // true positive, but expected (system property)
+  @SuppressWarnings("determinism:argument.type.incompatible") // true positive, but expected (system property)
   public static void addToClasspath(String dir) {
     // If the dir isn't on CLASSPATH, add it.
     String pathSep = System.getProperty("path.separator");
