@@ -83,6 +83,7 @@ checkerFramework {
     '-AwarnUnneededSuppressionsExceptions=purity|method.guarantee.violated|:deterministic',
     // '-AsuppressWarnings=determinism:throw.type.invalid',
     // '-AusePolyDefault',
+    '-Awarns',
   ]
 }
 
