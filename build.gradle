@@ -83,6 +83,8 @@ checkerFramework {
     // '-AsuppressWarnings=determinism:throw.type.invalid',
     // '-AusePolyDefault',
     '-Awarns',
+    '-Xmaxerrs','10000',
+    '-Xmaxwarns','10000',
   ]
 }
 
